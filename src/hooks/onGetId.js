@@ -1,16 +1,17 @@
-import { map, pipe, last } from 'ramda'
+import { map, tap, pipe, last } from 'ramda'
 import { fork } from 'fluture'
 
 import readFileOr from '../utils/readFileOr'
-import selectBySelector from '../utils/selectBySelector'
+import selectEntityOr from '../utils/selectEntityOr'
 
-const onGetId = ({ STORAGE }) => (req, res, next) => {
-  const sel = last(STORAGE.ACCESS_PATH)
-  const finish = (x) => res.json(x)
+const onGetId = ({ STORAGE, CONSTANTS }) => (req, res, next) => {
+  const { NO_MATCH: NOT_FOUND } = CONSTANTS
+  const entity = last(STORAGE.ACCESS_PATH)
+  const finish = (x) => (x[NOT_FOUND] ? res.sendStatus(404) : res.json(x))
   pipe(
     readFileOr({}),
     map(JSON.parse),
-    selectBySelector(sel, req.params[sel]),
+    map(selectEntityOr({ [NOT_FOUND]: true }, entity, req.params[entity])),
     fork(next)(finish)
   )(STORAGE.BRAIN)
 }

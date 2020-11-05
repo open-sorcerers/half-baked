@@ -1,3 +1,4 @@
+import { map, pipe } from 'ramda'
 import { APPLICATION_JSON } from './constants'
 
 import onCancel from './hooks/onCancel'
@@ -5,8 +6,13 @@ import onGetId from './hooks/onGetId'
 import onGetRoot from './hooks/onGetRoot'
 import onPostId from './hooks/onPostId'
 import onPostRoot from './hooks/onPostRoot'
+const freeze = Object.freeze
+const deepFreeze = pipe(map(freeze), freeze)
 
-const DEFAULT_CONFIG = Object.freeze({
+const DEFAULT_CONFIG = deepFreeze({
+  CONSTANTS: {
+    NO_MATCH: 'no-matching-entity-found'
+  },
   CORS: {
     origin: true,
     credentials: true

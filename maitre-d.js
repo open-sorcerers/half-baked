@@ -32,20 +32,28 @@ const readFileOr = ramda.curry(function _readFileOr(otherwise, pathToFile) {
   }), fluture.chain(forceFileExistence))(pathToFile);
 });
 
-const selectBySelector = ramda.curry(function select(selector, id, futureData) {
-  return ramda.map(ramda.find(({
+const notEmpty = x => Object.values(x).filter(z => z).length > 0;
+
+const selectBySelectorOr = ramda.curry(function select(or, selector, id, futureData) {
+  return ramda.pipe(ramda.map(ramda.find(({
     [selector]: given
-  }) => id === given))(futureData);
+  }) => id === given)), z => notEmpty(z) ? z : or)(futureData);
 });
 
 const onGetId = ({
-  STORAGE
+  STORAGE,
+  CONSTANTS
 }) => (req, res, next) => {
-  const sel = ramda.last(STORAGE.ACCESS_PATH);
+  const {
+    NO_MATCH: NOT_FOUND
+  } = CONSTANTS;
+  const entity = ramda.last(STORAGE.ACCESS_PATH);
 
-  const finish = x => res.json(x);
+  const finish = x => x[NOT_FOUND] ? res.sendStatus(404) : res.json(x);
 
-  ramda.pipe(readFileOr({}), ramda.map(JSON.parse), selectBySelector(sel, req.params[sel]), fluture.fork(next)(finish))(STORAGE.BRAIN);
+  ramda.pipe(readFileOr({}), ramda.map(JSON.parse), ramda.map(selectBySelectorOr({
+    [NOT_FOUND]: true
+  }, entity, req.params[entity])), fluture.fork(next)(finish))(STORAGE.BRAIN);
 };
 
 const defaultData = () => JSON.stringify({
@@ -80,7 +88,12 @@ const onPostRoot = config => (req, res, next) => {
   ramda.pipe(x => JSON.stringify(x), T.writeFile(config.STORAGE.BRAIN, ramda.__, 'utf8'), fluture.fork(next)(finish))(req.body);
 };
 
-const DEFAULT_CONFIG = Object.freeze({
+const freeze = Object.freeze;
+const deepFreeze = ramda.pipe(ramda.map(freeze), freeze);
+const DEFAULT_CONFIG = deepFreeze({
+  CONSTANTS: {
+    NO_MATCH: 'no-matching-entity-found'
+  },
   CORS: {
     origin: true,
     credentials: true
