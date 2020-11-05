@@ -31,8 +31,9 @@ describe("servers, who needs 'em?", () => {
       saved.server.removeAllListeners()
       saved.server.unref()
       saved.server.close(() => {
-      done()
-      process.exit(0)
+        saved.onUnload()
+        done()
+        // process.exit(0) // or `--forceExit`
       })
     }
   })

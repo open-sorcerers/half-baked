@@ -4,6 +4,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
+import { createHttpTerminator } from 'http-terminator'
 import { is, merge, pipe, map } from 'ramda'
 import { Future } from 'fluture'
 
@@ -70,6 +71,7 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       const server = app.listen(CONFIG.PORT, load)
       state.server = server
       state.onUnload = onUnloadWithConfig(state.server, LOCALIZED_CONFIG)
+      process.on('exit', state.onUnload)
       process.on('SIGTERM', state.onUnload)
       process.on('SIGINT', state.onUnload)
     }

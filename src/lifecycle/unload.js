@@ -14,6 +14,7 @@ const announceBackupWithConfig = curry(function _announceBackupWithConfig(
   setTimeout(() => process.exit(2), 5e3)
 })
 const errorOnExit = (e) => {
+  console.log("ERROR?", e)
   process.exit(1)
 }
 

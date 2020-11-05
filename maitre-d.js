@@ -8,6 +8,7 @@ var bodyParser = _interopDefault(require('body-parser'));
 var cors = _interopDefault(require('cors'));
 var pino = _interopDefault(require('pino'));
 var pinoHttp = _interopDefault(require('pino-http'));
+require('http-terminator');
 var ramda = require('ramda');
 var fluture = require('fluture');
 var T = require('torpor');
@@ -134,6 +135,7 @@ const announceBackupWithConfig = ramda.curry(function _announceBackupWithConfig(
 });
 
 const errorOnExit = e => {
+  console.log("ERROR?", e);
   process.exit(1);
 };
 
@@ -211,6 +213,7 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       const server = app.listen(CONFIG.PORT, load);
       state.server = server;
       state.onUnload = onUnloadWithConfig(state.server, LOCALIZED_CONFIG);
+      process.on('exit', state.onUnload);
       process.on('SIGTERM', state.onUnload);
       process.on('SIGINT', state.onUnload);
     }
