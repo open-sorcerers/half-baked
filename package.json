@@ -1,0 +1,27 @@
+{
+  "name": "maitre-d",
+  "version": "0.0.0",
+  "description": "opinionated and skilled local server",
+  "main": "maitre-d.js",
+  "repository": "https://github.com/open-sorcerers/open-sorcerers/tree/master/projects/maitre-d",
+  "author": "brekk",
+  "license": "ISC",
+  "private": false,
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "ensorcel": "^0.0.2",
+    "express": "^4.17.1",
+    "fluture": "^13.0.1",
+    "ramda": "^0.27.1",
+    "torpor": "^0.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^7.12.1",
+    "eslint-config-sorcerers": "^0.0.5",
+    "eslint-plugin-react": "^7.21.5",
+    "prettier": "^2.1.2",
+    "prettier-eslint": "^11.0.0",
+    "xtrace": "^0.3.0"
+  }
+}
