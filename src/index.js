@@ -67,7 +67,8 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       : defaultOnLoad
     const state = { load }
     if (autoListen) {
-      state.server = app.listen(CONFIG.PORT, load)
+      const server = app.listen(CONFIG.PORT, load)
+      state.server = server
       state.onUnload = onUnloadWithConfig(state.server, LOCALIZED_CONFIG)
       process.on('SIGTERM', state.onUnload)
       process.on('SIGINT', state.onUnload)

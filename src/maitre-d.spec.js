@@ -2,45 +2,47 @@
 // import execa from 'execa'
 import why from 'why-is-node-running'
 import axios from 'axios'
-import { fork, cache } from 'fluture'
+import { fork } from 'fluture'
 import maitreD from './index'
 
 describe("servers, who needs 'em?", () => {
-  let server
-  let stop
+  let saved
+  const sockets = []
 
-  const masterServer = cache(
-    maitreD({
-      PORT: 2345,
-      logging: false,
-      autoListen: false,
-      onCancel: (conf) => () => {
-        console.log('this was cancelled')
-      }
+  const bind = (d) => ({ app, state }) => {
+    // server = app.listen(2345, d)
+    state.server.on('connection', (socket) => {
+      sockets.push(socket)
     })
-  )
+    saved = state
+    d()
+  }
+
+  const masterServer = maitreD({
+    PORT: 2345,
+    logging: false
+  })
 
   beforeAll((done) => {
-    stop = fork(done)(({ app }) => {
-      server = app.listen(2345, done)
-    })(masterServer)
+    fork(done)(bind(done))(masterServer)
   })
   afterAll((done) => {
-    if (server && server.close) {
-      server.unref()
-      server.close(() => {
-        console.log('barf?')
-        done()
+    if (saved && saved.server) {
+      saved.server.removeAllListeners()
+      saved.server.unref()
+      saved.server.close(() => {
+      done()
+      process.exit(0)
       })
-      console.log('METH', Object.keys(server))
     }
   })
 
   test('GET /', (done) => {
-    axios({ method: 'get', url: 'http://localhost:2345' })
+    return axios({ method: 'get', url: 'http://localhost:2345' })
       .catch(done)
       .then((out) => {
         expect(out.data).toMatchSnapshot()
+        // stop()
         done()
       })
   })
