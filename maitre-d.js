@@ -51,9 +51,9 @@ const onGetId = ({
 
   const finish = x => x[NOT_FOUND] ? res.sendStatus(404) : res.json(x);
 
-  ramda.pipe(readFileOr({}), ramda.map(JSON.parse), ramda.map(selectBySelectorOr({
+  ramda.pipe(readFileOr({}), ramda.map(ramda.pipe(JSON.parse, selectBySelectorOr({
     [NOT_FOUND]: true
-  }, entity, req.params[entity])), fluture.fork(next)(finish))(STORAGE.BRAIN);
+  }, entity, req.params[entity]))), fluture.fork(next)(finish))(STORAGE.BRAIN);
 };
 
 const defaultData = () => JSON.stringify({
@@ -106,6 +106,8 @@ const DEFAULT_CONFIG = deepFreeze({
     LIMIT: '50mb',
     TYPE: APPLICATION_JSON
   },
+  autoListen: true,
+  onLoad: false,
   onCancel,
   onGetId,
   onGetRoot,
@@ -118,7 +120,7 @@ function onLoadWithConfig(config) {
   return () => {
     const oldThoughts = readFileOr(defaultData());
     const newThoughts = T.writeFile(backup, ramda.__, 'utf8');
-    ramda.pipe(oldThoughts, ramda.chain(newThoughts), fluture.fork(console.warn)(console.log))(config.STORAGE.BRAIN);
+    ramda.pipe(oldThoughts, ramda.chain(newThoughts), fluture.fork(console.warn)(x => x))(config.STORAGE.BRAIN);
   };
 }
 
@@ -143,7 +145,7 @@ function onUnloadWithConfig(server, config) {
   };
 }
 
-const relativePath = x => path.resolve(__dirname, x); // head requests must return 204
+const relativePath = x => path.resolve(process.cwd(), x); // head requests must return 204
 
 
 const corsHead204 = (req, res) => {
@@ -161,7 +163,9 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       onGetId,
       onPostId,
       onCancel,
-      logging
+      logging,
+      autoListen,
+      onLoad
     } = CONFIG;
     const {
       BRAIN: _BRAIN,
@@ -197,18 +201,29 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     const LOCALIZED_CONFIG = Object.freeze(ramda.merge(CONFIG, {
       STORAGE: ramda.merge(STORAGE, LOCALIZED_STORAGE)
     }));
-    const onLoad = onLoadWithConfig(LOCALIZED_CONFIG);
-    const server = app.listen(CONFIG.PORT, onLoad);
-    const onUnload = onUnloadWithConfig(server, LOCALIZED_CONFIG);
-    process.on('SIGTERM', onUnload);
-    process.on('SIGINT', onUnload);
+    const defaultOnLoad = onLoadWithConfig(LOCALIZED_CONFIG);
+    const load = ramda.is(Function, onLoad) ? ramda.pipe(defaultOnLoad, onLoad) : defaultOnLoad;
+    const state = {
+      load
+    };
+
+    if (autoListen) {
+      state.server = app.listen(CONFIG.PORT, load);
+      state.onUnload = onUnloadWithConfig(state.server, LOCALIZED_CONFIG);
+      process.on('SIGTERM', state.onUnload);
+      process.on('SIGINT', state.onUnload);
+    }
+
     app.head('/', corsHead204);
     app.get('/', onGetRoot(LOCALIZED_CONFIG));
     app.post('/', onPostRoot(LOCALIZED_CONFIG));
     app.head('/:id', corsHead204);
     app.get('/:id', onGetId(LOCALIZED_CONFIG));
     app.post('/:id', onPostId(LOCALIZED_CONFIG));
-    good(app);
+    good({
+      app,
+      state
+    });
     return onCancel(LOCALIZED_CONFIG);
   });
 }

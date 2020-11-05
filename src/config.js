@@ -25,6 +25,8 @@ const DEFAULT_CONFIG = deepFreeze({
     LIMIT: '50mb',
     TYPE: APPLICATION_JSON
   },
+  autoListen: true,
+  onLoad: false,
   onCancel,
   onGetId,
   onGetRoot,

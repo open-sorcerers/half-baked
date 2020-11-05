@@ -10,8 +10,12 @@ const onGetId = ({ STORAGE, CONSTANTS }) => (req, res, next) => {
   const finish = (x) => (x[NOT_FOUND] ? res.sendStatus(404) : res.json(x))
   pipe(
     readFileOr({}),
-    map(JSON.parse),
-    map(selectEntityOr({ [NOT_FOUND]: true }, entity, req.params[entity])),
+    map(
+      pipe(
+        JSON.parse,
+        selectEntityOr({ [NOT_FOUND]: true }, entity, req.params[entity])
+      )
+    ),
     fork(next)(finish)
   )(STORAGE.BRAIN)
 }

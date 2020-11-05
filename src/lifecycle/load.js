@@ -14,7 +14,7 @@ function onLoadWithConfig(config) {
     pipe(
       oldThoughts,
       chain(newThoughts),
-      fork(console.warn)(console.log)
+      fork(console.warn)((x) => x)
     )(config.STORAGE.BRAIN)
   }
 }

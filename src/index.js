@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
-import { merge, pipe, map } from 'ramda'
+import { is, merge, pipe, map } from 'ramda'
 import { Future } from 'fluture'
 
 import DEFAULT_CONFIG from './config'
@@ -12,7 +12,7 @@ import { APPLICATION_JSON } from './constants'
 import onLoadWithConfig from './lifecycle/load'
 import onUnloadWithConfig from './lifecycle/unload'
 
-const relativePath = (x) => path.resolve(__dirname, x)
+const relativePath = (x) => path.resolve(process.cwd(), x)
 
 // head requests must return 204
 const corsHead204 = (req, res) => {
@@ -30,7 +30,9 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       onGetId,
       onPostId,
       onCancel,
-      logging
+      logging,
+      autoListen,
+      onLoad
     } = CONFIG
     const { BRAIN: _BRAIN, BACKUP: _BACKUP, LIMIT: limit, TYPE: type } = STORAGE
 
@@ -59,12 +61,17 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       merge(CONFIG, { STORAGE: merge(STORAGE, LOCALIZED_STORAGE) })
     )
 
-    const onLoad = onLoadWithConfig(LOCALIZED_CONFIG)
-    const server = app.listen(CONFIG.PORT, onLoad)
-    const onUnload = onUnloadWithConfig(server, LOCALIZED_CONFIG)
-
-    process.on('SIGTERM', onUnload)
-    process.on('SIGINT', onUnload)
+    const defaultOnLoad = onLoadWithConfig(LOCALIZED_CONFIG)
+    const load = is(Function, onLoad)
+      ? pipe(defaultOnLoad, onLoad)
+      : defaultOnLoad
+    const state = { load }
+    if (autoListen) {
+      state.server = app.listen(CONFIG.PORT, load)
+      state.onUnload = onUnloadWithConfig(state.server, LOCALIZED_CONFIG)
+      process.on('SIGTERM', state.onUnload)
+      process.on('SIGINT', state.onUnload)
+    }
 
     app.head('/', corsHead204)
     app.get('/', onGetRoot(LOCALIZED_CONFIG))
@@ -73,7 +80,7 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     app.head('/:id', corsHead204)
     app.get('/:id', onGetId(LOCALIZED_CONFIG))
     app.post('/:id', onPostId(LOCALIZED_CONFIG))
-    good(app)
+    good({ app, state })
     return onCancel(LOCALIZED_CONFIG)
   })
 }
