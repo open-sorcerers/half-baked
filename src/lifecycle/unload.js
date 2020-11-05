@@ -1,13 +1,11 @@
-const T = require('torpor')
-const { assocPath, map, __, curry, chain, pipe } = require('ramda')
-const { trace } = require('xtrace')
-const { fork } = require('fluture')
+import T from 'torpor'
+import { assocPath, map, __, curry, chain, pipe } from 'ramda'
+import { fork } from 'fluture'
 
 const announceBackupWithConfig = curry(function _announceBackupWithConfig(
   server,
   x
 ) {
-  trace('data saved...', x)
   // kill connection
   server.close(() => {
     process.exit(0)
@@ -16,15 +14,9 @@ const announceBackupWithConfig = curry(function _announceBackupWithConfig(
   setTimeout(() => process.exit(2), 5e3)
 })
 const errorOnExit = (e) => {
-  trace('error on exiting', e)
   process.exit(1)
 }
 
-/**
- * @example
- * @param server
- * @param config
- */
 function onUnloadWithConfig(server, config) {
   return () => {
     const oldThoughts = T.readFile(config.STORAGE.BRAIN)
@@ -33,7 +25,6 @@ function onUnloadWithConfig(server, config) {
       oldThoughts,
       map(
         pipe(
-          trace('saving state on exit...'),
           JSON.parse,
           assocPath(['meta', 'modified'], new Date().toString()),
           (x) => JSON.stringify(x, null, 2)
@@ -45,4 +36,4 @@ function onUnloadWithConfig(server, config) {
   }
 }
 
-module.exports = onUnloadWithConfig
+export default onUnloadWithConfig

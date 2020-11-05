@@ -1,7 +1,8 @@
-const { map, pipe, last } = require('ramda')
-const { fork } = require('fluture')
-const readFileOr = require('./readFileOr')
-const selectBySelector = require('./selectBySelector')
+import { map, pipe, last } from 'ramda'
+import { fork } from 'fluture'
+
+import readFileOr from '../utils/readFileOr'
+import selectBySelector from '../utils/selectBySelector'
 
 const onGetId = ({ STORAGE }) => (req, res, next) => {
   const sel = last(STORAGE.ACCESS_PATH)
@@ -14,4 +15,4 @@ const onGetId = ({ STORAGE }) => (req, res, next) => {
   )(STORAGE.BRAIN)
 }
 
-module.exports = onGetId
+export default onGetId

@@ -1,8 +1,8 @@
-const { map, pipe } = require('ramda')
-const { fork } = require('fluture')
+import { map, pipe } from 'ramda'
+import { fork } from 'fluture'
 
-const readFileOr = require('./readFileOr')
-const defaultDataFrom = require('./default-data')
+import defaultDataFrom from '../default-data'
+import readFileOr from '../utils/readFileOr'
 
 const onGetRoot = (CONFIG) => {
   const forceReadFile = readFileOr(defaultDataFrom(CONFIG))
@@ -13,4 +13,4 @@ const onGetRoot = (CONFIG) => {
   }
 }
 
-module.exports = onGetRoot
+export default onGetRoot

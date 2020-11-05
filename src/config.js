@@ -1,10 +1,10 @@
-const onCancel = require('./onCancel')
-const onGetId = require('./onGetId')
-const onGetRoot = require('./onGetRoot')
-const onPostId = require('./onPostId')
-const onPostRoot = require('./onPostRoot')
+import { APPLICATION_JSON } from './constants'
 
-const { APPLICATION_JSON } = require('./constants')
+import onCancel from './hooks/onCancel'
+import onGetId from './hooks/onGetId'
+import onGetRoot from './hooks/onGetRoot'
+import onPostId from './hooks/onPostId'
+import onPostRoot from './hooks/onPostRoot'
 
 const DEFAULT_CONFIG = Object.freeze({
   CORS: {
@@ -26,4 +26,4 @@ const DEFAULT_CONFIG = Object.freeze({
   onPostRoot
 })
 
-module.exports = DEFAULT_CONFIG
+export default DEFAULT_CONFIG

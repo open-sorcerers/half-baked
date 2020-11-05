@@ -1,16 +1,17 @@
-const path = require('path')
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const pino = require('pino')
-const pinoHttp = require('pino-http')
-const { merge, pipe, map } = require('ramda')
-const { Future } = require('fluture')
+import path from 'path'
+import express from 'express'
+import bodyParser from 'body-parser'
+import cors from 'cors'
+import pino from 'pino'
+import pinoHttp from 'pino-http'
+import { merge, pipe, map } from 'ramda'
+import { Future } from 'fluture'
 
-const DEFAULT_CONFIG = require('./src/config')
-const { APPLICATION_JSON } = require('./src/constants')
-const onLoadWithConfig = require('./src/load')
-const onUnloadWithConfig = require('./src/unload')
+import DEFAULT_CONFIG from './config'
+import { APPLICATION_JSON } from './constants'
+import onLoadWithConfig from './lifecycle/load'
+import onUnloadWithConfig from './lifecycle/unload'
+
 const relativePath = (x) => path.resolve(__dirname, x)
 
 // head requests must return 204
@@ -18,7 +19,7 @@ const corsHead204 = (req, res) => {
   res.sendStatus(204)
 }
 
-module.exports = function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
+function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
   return new Future(function configuredServer(bad, good) {
     const CONFIG = pipe(merge(DEFAULT_CONFIG), Object.freeze)(rawConfig)
     const {
@@ -76,3 +77,5 @@ module.exports = function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     return onCancel(LOCALIZED_CONFIG)
   })
 }
+
+export default configureMaitreD

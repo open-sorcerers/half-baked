@@ -1,6 +1,6 @@
-const { readFile, writeFile } = require('torpor')
-const { map, pipe, curry, __ } = require('ramda')
-const { chain, resolve } = require('fluture')
+import { readFile, writeFile } from 'torpor'
+import { map, pipe, curry, __ } from 'ramda'
+import { chain, resolve } from 'fluture'
 
 const readFileOr = curry(function _readFileOr(otherwise, pathToFile) {
   const forceFileExistence = (raw) => {
@@ -18,4 +18,4 @@ const readFileOr = curry(function _readFileOr(otherwise, pathToFile) {
   )(pathToFile)
 })
 
-module.exports = readFileOr
+export default readFileOr
