@@ -47,11 +47,11 @@ const onGetId = ({
   const {
     NO_MATCH: NOT_FOUND
   } = CONSTANTS;
-  const entity = ramda.last(STORAGE.ACCESS_PATH);
+  const entity = STORAGE.ACCESS_PATH && ramda.last(STORAGE.ACCESS_PATH) || 'id';
 
   const finish = x => x[NOT_FOUND] ? res.sendStatus(404) : res.json(x);
 
-  ramda.pipe(readFileOr({}), ramda.map(ramda.pipe(JSON.parse, selectBySelectorOr({
+  ramda.pipe(readFileOr(`{}`), ramda.map(ramda.pipe(JSON.parse, selectBySelectorOr({
     [NOT_FOUND]: true
   }, entity, req.params[entity]))), fluture.fork(next)(finish))(STORAGE.BRAIN);
 };
@@ -81,8 +81,6 @@ const onPostId = config => (req, res, next) => {
 };
 
 const onPostRoot = config => (req, res, next) => {
-  console.log('THIS SHOULD FIRE!');
-
   const finish = () => res.json({
     saved: true
   });
@@ -127,27 +125,38 @@ function onLoadWithConfig(config) {
   };
 }
 
+const j2 = x => JSON.stringify(x, null, 2);
+/* istanbul ignore next */
+
+
 const announceBackupWithConfig = ramda.curry(function _announceBackupWithConfig(server, x) {
-  // kill connection
   server.close(() => {
     process.exit(0);
-  }); // force kill connection
-
+  });
   setTimeout(() => process.exit(2), 5e3);
 });
+/* istanbul ignore next */
 
 const errorOnExit = e => {
-  console.log("ERROR?", e);
+  console.log('ERROR?', e);
   process.exit(1);
 };
+const addModifiedBy = x => ramda.pipe(JSON.parse, ramda.assocPath(['meta', 'modified'], new Date().toString()), j2)(x);
+/* istanbul ignore next */
 
 function onUnloadWithConfig(server, config) {
   return () => {
     const oldThoughts = T__default.readFile(config.STORAGE.BRAIN);
     const newThoughts = T__default.writeFile(config.STORAGE.BACKUP, ramda.__, 'utf8');
-    ramda.pipe(oldThoughts, ramda.map(ramda.pipe(JSON.parse, ramda.assocPath(['meta', 'modified'], new Date().toString()), x => JSON.stringify(x, null, 2))), ramda.chain(newThoughts), fluture.fork(errorOnExit)(announceBackupWithConfig(server)))('utf8');
+    ramda.pipe(oldThoughts, ramda.map(addModifiedBy), ramda.chain(newThoughts), fluture.fork(errorOnExit)(announceBackupWithConfig(server)))('utf8');
   };
 }
+
+const j0 = x => JSON.stringify(x, null, 2);
+
+const updateFile = ramda.curry(function _updateFile(filepath, update) {
+  return ramda.pipe(T.readFile(ramda.__, 'utf8'), ramda.map(ramda.pipe(JSON.parse, update, j0)), fluture.chain(T.writeFile(filepath, ramda.__, 'utf8')))(filepath);
+});
 
 const relativePath = x => path.resolve(process.cwd(), x); // head requests must return 204
 
@@ -158,7 +167,7 @@ const corsHead204 = (req, res) => {
 
 function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
   return new fluture.Future(function configuredServer(bad, good) {
-    const CONFIG = ramda.pipe(ramda.merge(DEFAULT_CONFIG), Object.freeze)(rawConfig);
+    const CONFIG = ramda.pipe(ramda.mergeDeepRight(DEFAULT_CONFIG), Object.freeze)(rawConfig);
     const {
       STORAGE,
       CORS,
@@ -202,8 +211,9 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       BRAIN: _BRAIN,
       BACKUP: _BACKUP
     });
-    const LOCALIZED_CONFIG = Object.freeze(ramda.merge(CONFIG, {
-      STORAGE: ramda.merge(STORAGE, LOCALIZED_STORAGE)
+    const LOCALIZED_CONFIG = Object.freeze(ramda.mergeDeepRight(CONFIG, {
+      STORAGE: ramda.mergeDeepRight(STORAGE, LOCALIZED_STORAGE),
+      updateBrain: updateFile(LOCALIZED_STORAGE.BRAIN)
     }));
     const defaultOnLoad = onLoadWithConfig(LOCALIZED_CONFIG);
     const load = ramda.is(Function, onLoad) ? ramda.pipe(defaultOnLoad, onLoad) : defaultOnLoad;
@@ -230,7 +240,9 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       app,
       state,
       config: CONFIG,
-      localized: LOCALIZED_CONFIG
+      localized: LOCALIZED_CONFIG,
+      updateFile,
+      updateRoot: updateFile(LOCALIZED_CONFIG.STORAGE.BRAIN)
     });
     return onCancel(LOCALIZED_CONFIG);
   });

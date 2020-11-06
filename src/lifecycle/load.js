@@ -1,6 +1,5 @@
 import { writeFile } from 'torpor'
 import { chain, pipe, __ } from 'ramda'
-// import { trace } from 'xtrace'
 import { fork } from 'fluture'
 
 import defaultDataFrom from '../default-data'

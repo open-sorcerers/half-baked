@@ -1,7 +1,5 @@
-import { map, tap, pipe, last } from 'ramda'
+import { map, pipe, last } from 'ramda'
 import { fork } from 'fluture'
-import { trace } from 'xtrace'
-
 import readFileOr from '../utils/readFileOr'
 import selectEntityOr from '../utils/selectEntityOr'
 

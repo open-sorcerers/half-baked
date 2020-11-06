@@ -4,13 +4,14 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
-import { is, merge, pipe, map } from 'ramda'
+import { is, mergeDeepRight, pipe, map } from 'ramda'
 import { Future } from 'fluture'
 
 import DEFAULT_CONFIG from './config'
 import { APPLICATION_JSON } from './constants'
 import onLoadWithConfig from './lifecycle/load'
 import { onUnloadWithConfig } from './lifecycle/unload'
+import updateFile from './utils/updateFile'
 
 const relativePath = (x) => path.resolve(process.cwd(), x)
 
@@ -21,7 +22,7 @@ const corsHead204 = (req, res) => {
 
 function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
   return new Future(function configuredServer(bad, good) {
-    const CONFIG = pipe(merge(DEFAULT_CONFIG), Object.freeze)(rawConfig)
+    const CONFIG = pipe(mergeDeepRight(DEFAULT_CONFIG), Object.freeze)(rawConfig)
     const {
       STORAGE,
       CORS,
@@ -58,7 +59,7 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     })
 
     const LOCALIZED_CONFIG = Object.freeze(
-      merge(CONFIG, { STORAGE: merge(STORAGE, LOCALIZED_STORAGE) })
+      mergeDeepRight(CONFIG, { STORAGE: mergeDeepRight(STORAGE, LOCALIZED_STORAGE), updateBrain: updateFile(LOCALIZED_STORAGE.BRAIN) })
     )
 
     const defaultOnLoad = onLoadWithConfig(LOCALIZED_CONFIG)
@@ -66,6 +67,8 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       ? pipe(defaultOnLoad, onLoad)
       : defaultOnLoad
     const state = { load }
+
+
     if (autoListen) {
       const server = app.listen(CONFIG.PORT, load)
       state.server = server
@@ -82,7 +85,14 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     app.head('/:id', corsHead204)
     app.get('/:id', onGetId(LOCALIZED_CONFIG))
     app.post('/:id', onPostId(LOCALIZED_CONFIG))
-    good({ app, state, config: CONFIG, localized: LOCALIZED_CONFIG })
+    good({
+      app,
+      state,
+      config: CONFIG,
+      localized: LOCALIZED_CONFIG,
+      updateFile,
+      updateRoot: updateFile(LOCALIZED_CONFIG.STORAGE.BRAIN)
+    })
     return onCancel(LOCALIZED_CONFIG)
   })
 }
