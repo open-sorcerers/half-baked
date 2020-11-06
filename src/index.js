@@ -4,14 +4,13 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import pino from 'pino'
 import pinoHttp from 'pino-http'
-import { createHttpTerminator } from 'http-terminator'
 import { is, merge, pipe, map } from 'ramda'
 import { Future } from 'fluture'
 
 import DEFAULT_CONFIG from './config'
 import { APPLICATION_JSON } from './constants'
 import onLoadWithConfig from './lifecycle/load'
-import onUnloadWithConfig from './lifecycle/unload'
+import { onUnloadWithConfig } from './lifecycle/unload'
 
 const relativePath = (x) => path.resolve(process.cwd(), x)
 
@@ -83,7 +82,7 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     app.head('/:id', corsHead204)
     app.get('/:id', onGetId(LOCALIZED_CONFIG))
     app.post('/:id', onPostId(LOCALIZED_CONFIG))
-    good({ app, state })
+    good({ app, state, config: CONFIG, localized: LOCALIZED_CONFIG })
     return onCancel(LOCALIZED_CONFIG)
   })
 }

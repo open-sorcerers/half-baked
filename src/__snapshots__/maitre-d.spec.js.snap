@@ -1,15 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`servers, who needs 'em? GET / 1`] = `
+exports[`servers, who needs 'em?  GET / 1`] = `
+Array [
+  Object {
+    "id": "cool",
+    "this": "is pretty cool",
+  },
+]
+`;
+
+exports[`servers, who needs 'em?  GET /:id - cool 1`] = `
 Object {
-  "data": Array [
-    Object {
-      "id": "cool",
-      "this": "is pretty cool",
-    },
-  ],
-  "meta": Object {
-    "generatedBy": "maitre-d",
+  "data": Object {
+    "id": "cool",
+    "this": "is pretty cool",
   },
 }
 `;

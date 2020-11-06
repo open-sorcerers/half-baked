@@ -8,7 +8,6 @@ var bodyParser = _interopDefault(require('body-parser'));
 var cors = _interopDefault(require('cors'));
 var pino = _interopDefault(require('pino'));
 var pinoHttp = _interopDefault(require('pino-http'));
-require('http-terminator');
 var ramda = require('ramda');
 var fluture = require('fluture');
 var T = require('torpor');
@@ -82,6 +81,8 @@ const onPostId = config => (req, res, next) => {
 };
 
 const onPostRoot = config => (req, res, next) => {
+  console.log('THIS SHOULD FIRE!');
+
   const finish = () => res.json({
     saved: true
   });
@@ -91,6 +92,7 @@ const onPostRoot = config => (req, res, next) => {
 
 const freeze = Object.freeze;
 const deepFreeze = ramda.pipe(ramda.map(freeze), freeze);
+
 const DEFAULT_CONFIG = deepFreeze({
   CONSTANTS: {
     NO_MATCH: 'no-matching-entity-found'
@@ -226,7 +228,9 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     app.post('/:id', onPostId(LOCALIZED_CONFIG));
     good({
       app,
-      state
+      state,
+      config: CONFIG,
+      localized: LOCALIZED_CONFIG
     });
     return onCancel(LOCALIZED_CONFIG);
   });

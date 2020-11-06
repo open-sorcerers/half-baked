@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`onGetId - /:id cool 1`] = `
+Object {
+  "id": "cool",
+  "this": "is pretty cool",
+}
+`;

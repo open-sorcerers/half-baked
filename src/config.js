@@ -1,4 +1,3 @@
-import { map, pipe } from 'ramda'
 import { APPLICATION_JSON } from './constants'
 
 import onCancel from './hooks/onCancel'
@@ -6,8 +5,7 @@ import onGetId from './hooks/onGetId'
 import onGetRoot from './hooks/onGetRoot'
 import onPostId from './hooks/onPostId'
 import onPostRoot from './hooks/onPostRoot'
-const freeze = Object.freeze
-const deepFreeze = pipe(map(freeze), freeze)
+import deepFreeze from './utils/deepFreeze'
 
 const DEFAULT_CONFIG = deepFreeze({
   CONSTANTS: {
