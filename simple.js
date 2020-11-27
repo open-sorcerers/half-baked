@@ -1,5 +1,5 @@
-const md = require('./maitre-d')
 const F = require('fluture')
+const hb = require('./half-baked')
 
 F.fork(console.warn)(({ config }) => {
   const storage = `(${config.STORAGE.BRAIN})`
@@ -7,15 +7,13 @@ F.fork(console.warn)(({ config }) => {
   const accessString = accessPath.slice(0, -1).join('.') + '[id]'
   const host = `http://localhost:${config.PORT}`
   console.log(`
-          ^ .               .'
-,-,-. ,-. . |- ,-. ,-.    ,-|
-| | | ,-| | |  |   |-' -- | |
-' ' ' \`-^ ' \`' '   \`-'    \`-^
-
-======== ${host} =======================================
+                ___     __             ___  __
+|__|  /\\  |    |__  __ |__)  /\\  |__/ |__  |  \
+|  | /~~\\ |___ |       |__) /~~\\ |  \\ |___ |__/
+======== ${host} ==================================
     HEAD ${host}/    ~ 204
     GET  ${host}/    ~ 200 + ${storage}
     HEAD ${host}/:id ~ 204
     GET  ${host}/:id ~ 200 + ${storage}.${accessString}
 `)
-})(md({ logging: true }))
+})(hb({ logging: true }))

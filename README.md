@@ -1,5 +1,5 @@
-# MAITRE-D
-> An opinionated and skilled local server
+# half-baked
+> A simple local server based on express
 
 1. You have some local data. It's probably JSON. Maybe it's an array of entities which have an "id" field.
 2. You have to spin up a local server to run as an API.
@@ -7,7 +7,7 @@
 4. You wanna grab data from that JSON. Maybe you wanna grab it by that "id" field
 5. You prefer Futures(?) as a way of modelling asynchrony with sanity. (?)
 
-Use `maitre-d`. It's built on top of `express` and has the following features:
+Use `half-baked`. It's built on top of `express` and has the following features:
 
 * Serve local data simply and configurably
   - default routes are:

@@ -1,39 +1,53 @@
-const {trace, configure, fork} = require('maitre-d')
+const { fork, chain } = require('fluture')
+const { writeFile } = require('torpor')
+const { merge, pipe, __ } = require('ramda')
 
-const serverF = configure({
-  // passed directly to `cors`
-  CORS: {
-    origin: true,
-    credentials: true
-  },
-  // what port should we run on?
-  PORT: 1234,
+const md = require('./half-baked')
+
+const jj = (nn) => (xx) => JSON.stringify(xx, null, nn)
+const j0 = jj(0)
+// const j2 = jj(2)
+
+const slugify = (x) => x.toLowerCase().replace(/\W/g, '-')
+
+const CONFIG = {
+  PORT: 3001,
   STORAGE: {
-    ACCESS_PATH: ['data', 'id'],
-    // what data should we load on mount / unmount?
-    BRAIN: 'data.json',
-    BACKUP: 'data-backup.json' // if omitted, would be `data.json.bak`,
-    // passed to `body-parser` as {limit, type}
-    LIMIT: '50mb',
-    TYPE: 'application/json'
+    BRAIN: 'bezierk.json',
+    BACKUP: 'bezierk.json.bak'
   },
-  onPostRoot: config => (req, res, next) => {
+  logging: true,
+  onPostRoot: ({ updateBrain }) => (req, res, next) => {
     const { points, name } = req.body
-      pipe(
-        JSON.stringify,
-        T.writeFile(`./${slugify(name)}.json`, __, "utf8"),
-        fork(next)(() => res.json({ saved: true }))
-      )({
-        points,
-        meta: {
-          modified: new Date().toString(),
-        },
-      })
+    const file = `${slugify(name)}.json`
+    const update = (raw) =>
+      merge(raw, { files: (raw.files || []).concat(file) })
+    pipe(
+      j0,
+      writeFile(`./${file}`, __, 'utf8'),
+      chain(() => updateBrain(update)),
+      fork(next)(() => res.json({ saved: true }))
+    )({ points, meta: { modified: new Date().toString() } })
   }
-})
+}
 
-fork(
-  trace('something went wrong')
-)(
-  ({config}) => trace('listening on ' + config.PORT)
-)(serverF)
+fork(console.warn)(({ config }) => {
+  const storage = `(${config.STORAGE.BRAIN})`
+  const accessPath = config.STORAGE.ACCESS_PATH
+  const accessString = accessPath.slice(0, -1).join('.') + '[id]'
+  const host = `http://localhost:${config.PORT}`
+  console.log(`
+ ____  _____ ____  _  _____ ____  _  __
+/  _ \\/  __//_   \\/ \\/  __//  __\\/ |/ /
+| | //|  \\   /   /| ||  \\  |  \\/||   /
+| |_\\\\|  /_ /   /_| ||  /_ |    /|   \\
+\\____/\\____\\\\____/\\_/\\____\\\\_/\\_\\\\_|\\_\\
+
+======== ${host} =======================================
+    HEAD ${host}/    ~ 204
+    GET  ${host}/    ~ 200 + ${storage}
+    POST ${host}/    ~ {points, meta: {modified}}
+    HEAD ${host}/:id ~ 204
+    GET  ${host}/:id ~ 200 + ${storage}.${accessString}
+`)
+})(md(CONFIG))

@@ -18,8 +18,8 @@ const DEFAULT_CONFIG = deepFreeze({
   PORT: 1234,
   STORAGE: {
     ACCESS_PATH: ['data', 'id'],
-    BRAIN: 'maitre-data.json',
-    BACKUP: 'maitre-data.json.bak',
+    BRAIN: 'half-bakedata.json',
+    BACKUP: 'half-bakedata.json.bak',
     LIMIT: '50mb',
     TYPE: APPLICATION_JSON
   },

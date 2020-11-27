@@ -7,7 +7,7 @@ test('onGetId - missing', (done) => {
   const raw = {
     STORAGE: {
       // ACCESS_PATH: ['data', 'id'],
-      BRAIN: '../../maitre-data.json'
+      BRAIN: '../../half-bakedata.json'
     },
     CONSTANTS: { NO_MATCH }
   }
@@ -30,7 +30,7 @@ test('onGetId - /:id cool', (done) => {
   const raw = {
     STORAGE: {
       ACCESS_PATH: ['data', 'id'],
-      BRAIN: path.resolve(__dirname, '../../maitre-data.json')
+      BRAIN: path.resolve(__dirname, '../../half-bakedata.json')
     },
     CONSTANTS: { NO_MATCH }
   }

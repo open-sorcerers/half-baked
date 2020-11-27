@@ -20,7 +20,7 @@ const corsHead204 = (req, res) => {
   res.sendStatus(204)
 }
 
-function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
+function configureHalfBaked(rawConfig = DEFAULT_CONFIG) {
   return new Future(function configuredServer(bad, good) {
     const CONFIG = pipe(mergeDeepRight(DEFAULT_CONFIG), Object.freeze)(rawConfig)
     const {
@@ -38,11 +38,11 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
     const { BRAIN: _BRAIN, BACKUP: _BACKUP, LIMIT: limit, TYPE: type } = STORAGE
 
     const app = express()
-    app.locals.title = "Maître d'Serveur"
+    app.locals.title = "Half-Baked"
     if (logging) {
       app.use(
         pinoHttp({
-          logger: pino({ name: 'maitre-d' })
+          logger: pino({ name: 'half-baked' })
         })
       )
     }
@@ -97,4 +97,4 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
   })
 }
 
-export default configureMaitreD
+export default configureHalfBaked

@@ -6,7 +6,7 @@ import { assocPath, pipe, map, __ } from 'ramda'
 import axios from 'axios'
 import { fork } from 'fluture'
 import T from 'torpor'
-import maitreD from './index'
+import halfBaked from './index'
 
 describe("servers, who needs 'em?", () => {
   let saved
@@ -22,7 +22,7 @@ describe("servers, who needs 'em?", () => {
     d()
   }
 
-  const masterServer = maitreD({
+  const masterServer = halfBaked({
     PORT: 2345
     // logging: true
     // autoListen: false
@@ -31,7 +31,6 @@ describe("servers, who needs 'em?", () => {
   beforeAll((done) => {
     fork(done)(bind(done))(masterServer)
   })
-  /*
   afterAll((done) => {
     // sockets.forEach((s) => s.destroy())
     // sockets = []
@@ -48,7 +47,6 @@ describe("servers, who needs 'em?", () => {
       })
     }
   })
-  */
 
   test('HEAD /', (done) => {
     return axios({ method: 'head', url: 'http://localhost:2345' })
@@ -84,7 +82,7 @@ describe("servers, who needs 'em?", () => {
             done()
           })
       })
-    )(path.resolve(__dirname, '../maitre-data.json'))
+    )(path.resolve(__dirname, '../half-bakedata.json'))
   })
 
   test('HEAD /:id - cool', (done) => {

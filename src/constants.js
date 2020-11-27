@@ -1,2 +1,2 @@
 export const APPLICATION_JSON = 'application/json'
-export const MAITRE_D = 'maitre-d'
+export const HALF_BAKED = 'half-baked'

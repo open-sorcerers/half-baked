@@ -59,7 +59,7 @@ const onGetId = ({
 const defaultData = () => JSON.stringify({
   data: [],
   meta: {
-    generatedBy: 'maitre-d'
+    generatedBy: 'half-baked'
   }
 }, null, 2);
 
@@ -102,8 +102,8 @@ const DEFAULT_CONFIG = deepFreeze({
   PORT: 1234,
   STORAGE: {
     ACCESS_PATH: ['data', 'id'],
-    BRAIN: 'maitre-data.json',
-    BACKUP: 'maitre-data.json.bak',
+    BRAIN: 'half-bakedata.json',
+    BACKUP: 'half-bakedata.json.bak',
     LIMIT: '50mb',
     TYPE: APPLICATION_JSON
   },
@@ -165,7 +165,7 @@ const corsHead204 = (req, res) => {
   res.sendStatus(204);
 };
 
-function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
+function configureHalfBaked(rawConfig = DEFAULT_CONFIG) {
   return new fluture.Future(function configuredServer(bad, good) {
     const CONFIG = ramda.pipe(ramda.mergeDeepRight(DEFAULT_CONFIG), Object.freeze)(rawConfig);
     const {
@@ -187,12 +187,12 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
       TYPE: type
     } = STORAGE;
     const app = express();
-    app.locals.title = "Maître d'Serveur";
+    app.locals.title = "Half-Baked";
 
     if (logging) {
       app.use(pinoHttp({
         logger: pino({
-          name: 'maitre-d'
+          name: 'half-baked'
         })
       }));
     } // cors
@@ -248,4 +248,4 @@ function configureMaitreD(rawConfig = DEFAULT_CONFIG) {
   });
 }
 
-module.exports = configureMaitreD;
+module.exports = configureHalfBaked;

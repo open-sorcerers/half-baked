@@ -37,7 +37,7 @@ const THE_MASTER_OF_THE = {
   HOUSE: 'src/index.js'
 }
 const buildFor = (input) => {
-  const name = `maitre-d`
+  const name = `half-baked`
   const out = [
     {
       input,
